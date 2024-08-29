@@ -13,7 +13,7 @@
     
     <!-- TOMBOL TAMBAH DATA -->
     <div class="pb-3 d-flex justify-content-end">
-        <a href='{{ url('karyawan/create') }}' class="btn btn-primary">+ Tambah Data</a>
+        <a href='{{ url('karyawan/create') }}' class="btn btn-primary">+ Add</a>
     </div>
 
     <table class="table table-striped">
@@ -23,7 +23,6 @@
                 <th class="col-md-2">NIP</th>
                 <th class="col-md-3">Nama</th>
                 <th class="col-md-2">Divisi</th>
-                <th class="col-md-2">Jabatan</th>
                 <th class="col-md-2">Action</th>
             </tr>
         </thead>
@@ -36,15 +35,14 @@
                 <td>{{ $item->nip }}</td>
                 <td>{{ $item->nama }}</td>
                 <td>{{ $item->divisi }}</td>
-                <td>{{ $item->role }}</td>
                 <td>
-                    <form onsubmit="return confirm('APAKAH ANDA YAKIN AKAN MENGHAPUS DATA?')" class='d-inline' action="{{ url('karyawan/'.$item->nim) }}" method="POST">
+
+                    <form onsubmit="return confirm('APAKAH ANDA YAKIN AKAN MENGHAPUS DATA?')" class='d-inline' action="{{ route('karyawan.destroy', $item->uuid) }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <a href='{{ url('karyawan/'.$item->nip.'/edit') }}' class="btn btn-warning btn-sm">Edit</a>
-                        <button type="submit" name="submit" class="btn btn-danger btn-sm">Del</button>
+                        <a href="{{ route('karyawan.edit', $item->uuid) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
-                </td>
             </tr>
             <?php $i++ ?>
             @endforeach

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('karyawan', function (Blueprint $table) {
             $table->string('nip', 10)->change();
-            $table->enum('role', ['Manager', 'Team Lead', 'Staff'])->default('Staff');
         });
     }
 
@@ -24,7 +23,6 @@ return new class extends Migration
     {
         Schema::table('karyawan', function (Blueprint $table) {
             $table->integer('nip')->change();
-            $table->dropColumn('role');
         });
     }
 };

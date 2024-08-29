@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -42,82 +43,69 @@ class KaryawanController extends Controller
         Session::flash('nip', $request->nip);
         Session::flash('nama', $request->nama);
         Session::flash('divisi', $request->divisi);
-        Session::flash('role', $request->role);
-
         $request->validate([
-            'nip' => 'required|numeric|digits_between:1,10|unique:karyawan,nip',
-            'nama' => 'required',
-            'divisi' => 'required',
-            'role' => 'required|in:Manager,Team Lead,Staff',
+            'nip' => 'required|numeric|digits:10|unique:karyawan,nip',
+            'nama' => 'required|string|max:255',
+            'divisi' => 'required|in:HR,Finance,Marcom,IT',
         ], [
             'nip.required' => 'NIP WAJIB DIISI',
             'nip.numeric' => 'NIP WAJIB DALAM ANGKA',
-            'nip.digits_between' => 'NIP MAKSIMAL 10 KARAKTER',
+            'nip.digits' => 'NIP HARUS 10 DIGIT',
             'nip.unique' => 'NIP SUDAH ADA DIDALAM DATABASE',
             'nama.required' => 'NAMA WAJIB DIISI',
             'divisi.required' => 'DIVISI WAJIB DIISI',
-            'role.required' => 'ROLE WAJIB DIISI',
-            'role.in' => 'ROLE TIDAK VALID',
         ]);
 
         $data = [
             'nip' => $request->nip,
             'nama' => $request->nama,
             'divisi' => $request->divisi,
-            'role' => $request->role,
+            'uuid' => Str::uuid(),
         ];
-        Karyawan::create($data);
-        return redirect()->to('karyawan')->with('success', 'BERHASIL MENAMBAHKAN DATA');
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        Karyawan::create($data);
+        return redirect()->route('karyawan.index')->with('success', 'BERHASIL MENAMBAHKAN DATA');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $uuid)
     {
-        $data = Karyawan::where('nip', $id)->first();
+        $data = Karyawan::where('uuid', $uuid)->firstOrFail();
         return view('karyawan.edit')->with('data', $data);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $uuid)
     {
         $request->validate([
-            'nama' => 'required',
-            'divisi' => 'required',
-            'role' => 'required|in:Manager,Team Lead,Staff',
+            'nama' => 'required|string|max:255',
+            'divisi' => 'required|in:HR,Finance,Marcom,IT',
         ], [
             'nama.required' => 'NAMA WAJIB DIISI',
             'divisi.required' => 'DIVISI WAJIB DIISI',
-            'role.required' => 'ROLE WAJIB DIISI',
-            'role.in' => 'ROLE TIDAK VALID',
         ]);
 
         $data = [
             'nama' => $request->nama,
             'divisi' => $request->divisi,
-            'role' => $request->role,
         ];
-        Karyawan::where('nip', $id)->update($data);
-        return redirect()->to('karyawan')->with('success', 'BERHASIL MELAKUKAN PERUBAHAN DATA');
+
+        Karyawan::where('uuid', $uuid)->update($data);
+        return redirect()->route('karyawan.index')->with('success', 'BERHASIL MELAKUKAN PERUBAHAN DATA');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $uuid)
     {
-        Karyawan::where('nip', $id)->delete();
-        return redirect()->to('karyawan')->with('success', 'BERHASIL MELAKUKAN DELETE DATA');
+        $karyawan = Karyawan::where('uuid', $uuid)->firstOrFail();
+        $karyawan->delete();
+
+        return redirect()->route('karyawan.index')->with('success', 'BERHASIL MENGHAPUS DATA');
     }
 }

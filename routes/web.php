@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\karyawanController;
+use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,3 +11,7 @@ Route::get('/', function () {
 
 
 Route::resource('karyawan',karyawanController::class);
+
+Route::resource('leaderboard',LeaderboardController::class);
+
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');

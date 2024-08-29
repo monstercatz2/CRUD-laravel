@@ -10,8 +10,9 @@ class Karyawan extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nip', 'nama', 'role', 'divisi', 'uuid'];
+    protected $fillable = ['nip', 'nama', 'divisi', 'uuid'];
     protected $table = 'karyawan';
+    public $primaryKey = 'uuid';
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = true;
@@ -27,8 +28,8 @@ class Karyawan extends Model
         });
     }
 
-    public function divisi()
+    public function penilaian()
     {
-        return $this->belongsTo(Divisi::class, 'divisi_id');
+        return $this->hasMany(Penilaian::class, 'karyawan_uuid', 'uuid');
     }
 }

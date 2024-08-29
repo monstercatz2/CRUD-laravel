@@ -13,9 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('karyawan', function (Blueprint $table) {
+            $table->uuid('uuid')->unique()->default(Str::uuid())->primary();
             $table->integer('nip')->unique();
             $table->string('nama')->unique();
-            $table->uuid('uuid')->unique()->default(Str::uuid());
             $table->enum('divisi', ['HR', 'Finance', 'Marcom', 'IT']);
             $table->timestamps();
         });

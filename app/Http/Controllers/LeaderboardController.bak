@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Karyawan;
+use App\Models\Penilaian;
+
+class LeaderboardController extends Controller
+{
+    public function index()
+    {
+        $penilaian = Penilaian::with('karyawan')->get();
+
+        $leaderboard = $penilaian->map(function ($item) {
+            $total = $item->amanah + $item->kompeten + $item->harmonis + $item->loyal + $item->adaptif;
+            $item->total_score = $total / 5;
+            return $item;
+        })->sortByDesc('rata');
+
+        return view('leaderboard.index', compact('leaderboard'));
+    }
+
+    public function create()
+    {
+            // Ambil UUID karyawan yang sudah dinilai
+    $dinilai = Penilaian::pluck('karyawan_uuid')->toArray();
+
+    // Ambil semua karyawan yang belum dinilai
+    $karyawanList = Karyawan::whereNotIn('uuid', $dinilai)->get();
+
+    return view('leaderboard.create', compact('karyawanList'));
+    }
+
+    public function store(Request $request)
+    {
+        dd($request);
+
+        $request->validate([
+            'karyawan_uuid' => 'required|exists:karyawan,uuid',
+            // Validasi lainnya...
+        ]);
+
+    $data = [
+        'karyawan_uuid' => $request->karyawan_uuid,
+        'amanah' => $request->has('amanah') ? (int) 25 : 0,
+        'kompeten' => $request->has('kompeten') ? (int) 25 : 0,
+        'harmonis' => $request->has('harmonis') ? (int) 10 : 0,
+        'loyal' => $request->has('loyal') ? (int) 20 : 0,
+        'adaptif' => $request->has('adaptif') ? (int) 20 : 0,
+    ];
+
+        $data['total_score'] = ($data['amanah'] + $data['kompeten'] + $data['harmonis'] + $data['loyal'] + $data['adaptif']) / 5;
+
+        Penilaian::create($data);
+
+        return redirect()->route('leaderboard.index')->with('success', 'Penilaian berhasil ditambahkan');
+    }
+
+    public function edit($id)
+    {
+        $penilaian = Penilaian::findOrFail($id);
+        $karyawanList = Karyawan::all();
+        return view('leaderboard.edit', compact('penilaian', 'karyawanList'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Validasi
+        $request->validate([
+            'karyawan_uuid' => 'required|exists:karyawan,uuid',
+        ]);
+    
+        // Memproses nilai checkbox
+        $data = [
+            'karyawan_uuid' => $request->karyawan_uuid,
+            'amanah' => ($request->amanah == '1') ? 25 : 0,  // Menggunakan loose comparison
+            'kompeten' => ($request->kompeten == '1') ? 25 : 0,
+            'harmonis' => ($request->harmonis == '1') ? 10 : 0,
+            'loyal' => ($request->loyal == '1') ? 20 : 0,
+            'adaptif' => ($request->adaptif == '1') ? 20 : 0,
+        ];
+    
+        // Menghitung total_score
+        $data['total_score'] = ($data['amanah'] + $data['kompeten'] + $data['harmonis'] + $data['loyal'] + $data['adaptif']) / 5;
+    
+        // Update data penilaian
+        $penilaian = Penilaian::findOrFail($id);
+        $penilaian->update($data);
+    
+        // Redirect dengan pesan sukses
+        return redirect()->route('leaderboard.index')->with('success', 'Penilaian berhasil diperbarui');
+    }
+    
+
+    public function destroy($id)
+    {
+        $penilaian = Penilaian::findOrFail($id);
+        $penilaian->delete();
+
+        return redirect()->route('leaderboard.index')->with('success', 'Penilaian berhasil dihapus');
+    }
+}
